@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
-
+import {useState,useEffect} from 'react';
+import {useDispatch} from 'react-redux';
+import authService from './appwrite/auth';
+import {login,logout} from './store/authSlice'
+import { Header,Footer } from './components';
+import { Outlet } from 'react-router-dom';
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+  // console.log(process.env.REACT_APP_APPWRITE_URL)
+  const [loading,setLoading] = useState(true);
+  const  dispatch=useDispatch();
+  
+  useEffect(()=>{
+     authService.getCurrentUser()
+     .then((userData) => {
+      if(userData){
+            dispatch(login({userData}))
+      }
+      else{
+        dispatch(logout())
+      }
+     }).catch((err) => {
+       console.log("error in login/logout",err);
+     })
+     .finally(()=>
+        setLoading(false))
+  }, [])
+    
+  return !loading ?(
+    <div className='min-h-screen flex flex-wrap flex-col content-between bg-white'>
+        <div className='w-full block'>
+          <Header/>
+            <main>
+               <Outlet/>
+            </main>
+          <Footer/>
+        </div>
     </div>
-  );
+  ): null
+
 }
 
 export default App;
